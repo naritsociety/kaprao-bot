@@ -18,6 +18,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           # คำสั่งที่จะให้ไปรันบนเครื่อง DO อัตโนมัติ
           script: |
+            export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
             cd ~/kaprao-bot
             git pull origin main
             bun install
