@@ -22,7 +22,7 @@ const app = new Elysia()
             replyToken: replyToken,
             messages: [
               { type: 'text', text: `รับออเดอร์ "${msg}" แล้วครับจารย์! 🍳` },
-              { type: 'text', text: `เดี๋ยวรีบผัดให้จ๊วดๆ เลยครับ!` }
+              { type: 'text', text: `เดี๋ยวรีบผัดให้จ๊วดๆ เลยครับ! Updated!` }
             ]
           })
         });
