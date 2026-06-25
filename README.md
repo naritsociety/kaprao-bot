@@ -49,3 +49,19 @@ Available routes:
 ```bash
 bun run start
 ```
+
+## PM2
+
+Use Bun as the interpreter and point PM2 at `src/index.ts`.
+
+```bash
+pm2 delete kaprao-api
+pm2 start ecosystem.config.cjs
+pm2 save
+```
+
+If the app is already registered with PM2:
+
+```bash
+pm2 restart kaprao-api --update-env
+```
