@@ -46,8 +46,7 @@ export const lineRoutes = new Elysia().post('/webhook', async ({ body, set }) =>
 
   for (const event of textMessageEvents) {
     await replyTextMessages(event.replyToken, [
-      `Received your order: "${event.message.text}"`,
-      'The kitchen is warming up. Updated!'
+      'ได้รับออเดอร์แล้วครับ ทางร้านจะรีบทำให้เร็วที่สุด'
     ])
   }
 
