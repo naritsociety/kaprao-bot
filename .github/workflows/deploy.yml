@@ -1,25 +1,41 @@
 name: Deploy Kaprao Bot to DigitalOcean
 
-# สั่งให้ทำงานทุกครั้งที่มีการ Push โค้ดเข้า branch "main"
 on:
   push:
     branches:
       - main
 
+concurrency:
+  group: deploy-kaprao-bot
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Executing remote ssh commands using ssh key
-        uses: appleboy/ssh-action@master
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          # คำสั่งที่จะให้ไปรันบนเครื่อง DO อัตโนมัติ
           script: |
+            set -e
+
             export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
+
+            if [ -n "${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" ]; then
+              export LINE_CHANNEL_ACCESS_TOKEN="${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}"
+            fi
+
             cd ~/kaprao-bot
             git pull origin main
-            bun install
-            pm2 restart kaprao-api
+            bun install --frozen-lockfile
+
+            if pm2 describe kaprao-api > /dev/null; then
+              pm2 restart ecosystem.config.cjs --update-env
+            else
+              pm2 start ecosystem.config.cjs
+            fi
+
+            pm2 save
