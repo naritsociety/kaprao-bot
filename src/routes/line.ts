@@ -33,8 +33,8 @@ const isTextMessageEvent = (
   (event as LineTextMessageEvent).message?.type === 'text'
 
 export const lineRoutes = new Elysia().post('/webhook', async ({ body, set }) => {
-  const events = Array.isArray((body as LineWebhookBody).events)
-    ? (body as LineWebhookBody).events
+  const events: LineWebhookEvent[] = Array.isArray((body as LineWebhookBody).events)
+    ? ((body as LineWebhookBody).events as LineWebhookEvent[])
     : []
 
   const textMessageEvents = events.filter(isTextMessageEvent)
