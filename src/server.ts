@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia'
+import { config } from './config/env'
 import { lineRoutes } from './routes/line'
 
 export const createApp = () =>
@@ -8,6 +9,7 @@ export const createApp = () =>
       status: 'ok'
     }))
     .get('/health', () => ({
-      status: 'ok'
+      status: 'ok',
+      lineConfigured: Boolean(config.lineChannelAccessToken)
     }))
     .use(lineRoutes)
