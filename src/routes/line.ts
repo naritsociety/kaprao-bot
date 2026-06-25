@@ -23,7 +23,7 @@ type LineWebhookBody = {
 }
 
 const orderReceivedReply =
-  '\u0e44\u0e14\u0e49\u0e23\u0e31\u0e1a\u0e2d\u0e2d\u0e40\u0e14\u0e2d\u0e23\u0e4c\u0e41\u0e25\u0e49\u0e27\u0e04\u0e23\u0e31\u0e1a \u0e17\u0e32\u0e07\u0e23\u0e49\u0e32\u0e19\u0e08\u0e30\u0e23\u0e35\u0e1a\u0e17\u0e33\u0e43\u0e2b\u0e49\u0e40\u0e23\u0e47\u0e27\u0e17\u0e35\u0e48\u0e2a\u0e38\u0e14'
+  'ได้รับออเดอร์ของคุณแล้ว! เราจะดำเนินการจัดส่งให้เร็วที่สุด ขอบคุณที่ใช้บริการของเรา 🙏'
 
 const isTextMessageEvent = (
   event: LineWebhookEvent
