@@ -1,4 +1,6 @@
-import 'dotenv/config' // โหลดค่า .env เข้ามาใน process.env
+// ลบหรือ comment บรรทัดนี้ออก
+// import 'dotenv/config'
+
 import { setupRichMenu } from './src/services/richMenu'
 
 async function main() {
