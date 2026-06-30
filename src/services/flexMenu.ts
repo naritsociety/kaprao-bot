@@ -15,7 +15,8 @@ export const createMenuFlexMessage = (state: UserOrderState) => {
         aspectMode: 'cover'
       },
       body: {
-        type: 'body',
+        type: 'box',  // ✅ แก้จาก 'body' เป็น 'box'
+        layout: 'vertical',  // ✅ เพิ่ม layout
         contents: [
           {
             type: 'text',
@@ -33,45 +34,40 @@ export const createMenuFlexMessage = (state: UserOrderState) => {
         ]
       },
       footer: {
-        type: 'footer',
+        type: 'box',  // ✅ แก้จาก 'footer' เป็น 'box'
+        layout: 'horizontal',  // ✅ เพิ่ม layout
         spacing: 'sm',
         contents: [
           {
-            type: 'box',
-            layout: 'horizontal',
-            contents: [
-              {
-                type: 'button',
-                action: {
-                  type: 'postback',
-                  label: '➖',
-                  data: `decrease:${item.id}`
-                },
-                style: 'secondary',
-                color: '#ff4444',
-                flex: 1
-              },
-              {
-                type: 'text',
-                text: `${qty}`,
-                align: 'center',
-                gravity: 'center',
-                size: 'md',
-                weight: 'bold',
-                flex: 1
-              },
-              {
-                type: 'button',
-                action: {
-                  type: 'postback',
-                  label: '➕',
-                  data: `increase:${item.id}`
-                },
-                style: 'primary',
-                color: '#00aa00',
-                flex: 1
-              }
-            ]
+            type: 'button',
+            action: {
+              type: 'postback',
+              label: '➖',
+              data: `decrease:${item.id}`
+            },
+            style: 'secondary',
+            color: '#ff4444',
+            flex: 1
+          },
+          {
+            type: 'text',
+            text: `${qty}`,
+            align: 'center',
+            gravity: 'center',
+            size: 'md',
+            weight: 'bold',
+            flex: 1
+          },
+          {
+            type: 'button',
+            action: {
+              type: 'postback',
+              label: '➕',
+              data: `increase:${item.id}`
+            },
+            style: 'primary',
+            color: '#00aa00',
+            flex: 1
           }
         ]
       }
@@ -100,7 +96,8 @@ export const createOrderSummaryFlexMessage = (state: UserOrderState) => {
   return {
     type: 'bubble',
     body: {
-      type: 'body',
+      type: 'box',  // ✅ แก้จาก 'body' เป็น 'box'
+      layout: 'vertical',  // ✅ เพิ่ม layout
       contents: [
         {
           type: 'text',
@@ -133,7 +130,8 @@ export const createOrderSummaryFlexMessage = (state: UserOrderState) => {
       ]
     },
     footer: {
-      type: 'footer',
+      type: 'box',  // ✅ แก้จาก 'footer' เป็น 'box'
+      layout: 'vertical',  // ✅ เพิ่ม layout
       spacing: 'sm',
       contents: [
         {
