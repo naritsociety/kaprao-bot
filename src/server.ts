@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import { config } from './config/env'
 import { lineRoutes } from './routes/line'
+import { adminRoutes } from './routes/admin'
 
 export const createApp = () =>
   new Elysia()
@@ -13,3 +14,4 @@ export const createApp = () =>
       lineConfigured: Boolean(config.lineChannelAccessToken)
     }))
     .use(lineRoutes)
+    .use(adminRoutes)

@@ -1,6 +1,5 @@
 import { config } from '../config/env'
 
-// ===== Types =====
 type LineTextMessage = {
   type: 'text'
   text: string
@@ -12,7 +11,7 @@ type FlexMessage = {
   contents: any
 }
 
-export type LineReplyResponse = {
+type LineReplyResponse = {
   sentMessages?: Array<{
     id: string
     quoteToken?: string
@@ -30,7 +29,6 @@ export type LineProfile = {
 const lineReplyUrl = 'https://api.line.me/v2/bot/message/reply'
 const lineProfileUrl = 'https://api.line.me/v2/bot/profile'
 
-// ===== 1. ฟังก์ชันส่งข้อความธรรมดา =====
 export const replyTextMessages = async (
   replyToken: string,
   texts: string[]
@@ -57,7 +55,6 @@ export const replyTextMessages = async (
   return response.json()
 }
 
-// ===== 2. ฟังก์ชันส่ง Flex Message (การ์ดสวยๆ) =====
 export const replyFlexMessage = async (
   replyToken: string,
   altText: string,
@@ -86,7 +83,6 @@ export const replyFlexMessage = async (
   return response.json()
 }
 
-// ===== 3. ฟังก์ชันดึง Profile ผู้ใช้ =====
 export const getProfile = async (userId: string): Promise<LineProfile> => {
   const response = await fetch(`${lineProfileUrl}/${userId}`, {
     method: 'GET',
