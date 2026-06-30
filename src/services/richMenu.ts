@@ -111,16 +111,22 @@ const getRichMenuList = async (): Promise<RichMenuListResponse> => {
 
 const createRichMenu = async (): Promise<RichMenuCreateResponse> => {
   ensureAccessToken()
-  return requestJson<RichMenuCreateResponse>(baseUrl, {
+  const created = await requestJson<RichMenuCreateResponse>(baseUrl, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(richMenuPayload)
   })
+
+  if (!created?.richMenuId) {
+    throw new Error('LINE rich menu create returned no richMenuId')
+  }
+
+  return created
 }
 
 const setDefaultRichMenu = async (richMenuId: string): Promise<void> => {
   ensureAccessToken()
-  const response = await fetch(`${baseUrl}/${richMenuId}/default`, {
+  const response = await fetch(`https://api.line.me/v2/bot/user/all/richmenu/${encodeURIComponent(richMenuId)}`, {
     method: 'POST',
     headers: getAuthHeaders()
   })
@@ -162,6 +168,11 @@ const uploadRichMenuImage = async (richMenuId: string): Promise<void> => {
   }
 }
 
+export const getRichMenuListInfo = async (): Promise<RichMenuInfo[]> => {
+  const richMenuList = await getRichMenuList()
+  return richMenuList.richmenus
+}
+
 export const setupRichMenu = async (): Promise<string> => {
   ensureAccessToken()
 
@@ -174,6 +185,10 @@ export const setupRichMenu = async (): Promise<string> => {
   }
 
   const created = await createRichMenu()
+  if (!created.richMenuId) {
+    throw new Error('Created rich menu did not include an ID')
+  }
+
   await uploadRichMenuImage(created.richMenuId)
   await setDefaultRichMenu(created.richMenuId)
   return created.richMenuId
