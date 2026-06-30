@@ -1,4 +1,5 @@
 import { config } from '../config/env'
+import { readFile } from 'fs/promises'
 
 type RichMenuArea = {
   bounds: {
@@ -137,16 +138,20 @@ const setDefaultRichMenu = async (richMenuId: string): Promise<void> => {
   }
 }
 
-const getRichMenuImage = async (): Promise<ArrayBuffer> => {
-  const imageUrl = 'https://via.placeholder.com/2500x843.png?text=Kaprao'
-  const response = await fetch(imageUrl)
+const getRichMenuImage = async (): Promise<Uint8Array> => {
+  try {
+    return await readFile(new URL('../rich-menu.png', import.meta.url))
+  } catch (error) {
+    const imageUrl = 'https://via.placeholder.com/2500x843.png?text=Kaprao'
+    const response = await fetch(imageUrl)
 
-  if (!response.ok) {
-    const body = await response.text()
-    throw new Error(`Failed to download rich menu image: ${response.status} ${body}`)
+    if (!response.ok) {
+      const body = await response.text()
+      throw new Error(`Failed to download rich menu image: ${response.status} ${body}`)
+    }
+
+    return new Uint8Array(await response.arrayBuffer())
   }
-
-  return response.arrayBuffer()
 }
 
 const uploadRichMenuImage = async (richMenuId: string): Promise<void> => {
