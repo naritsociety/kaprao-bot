@@ -24,8 +24,13 @@ jobs:
 
             export PATH="$HOME/.bun/bin:/usr/local/bin:$PATH"
 
+            # Export LINE Secrets เพื่อให้ PM2 อ่านค่าไปใช้ได้
             if [ -n "${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}" ]; then
               export LINE_CHANNEL_ACCESS_TOKEN="${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}"
+            fi
+            
+            if [ -n "${{ secrets.LINE_CHANNEL_SECRET }}" ]; then
+              export LINE_CHANNEL_SECRET="${{ secrets.LINE_CHANNEL_SECRET }}"
             fi
 
             cd ~/kaprao-bot

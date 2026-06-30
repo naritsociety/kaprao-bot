@@ -9,5 +9,6 @@ const toPort = (value: string | undefined) => {
 
 export const config = {
   port: toPort(process.env.PORT),
-  lineChannelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN ?? ''
+  lineChannelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN ?? '',
+  lineChannelSecret: process.env.LINE_CHANNEL_SECRET ?? ''
 }
