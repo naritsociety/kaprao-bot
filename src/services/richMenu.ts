@@ -180,6 +180,7 @@ export const setupRichMenu = async (): Promise<string> => {
   const existing = richMenuList.richmenus.find((menu) => menu.name === richMenuPayload.name)
 
   if (existing) {
+    await uploadRichMenuImage(existing.richMenuId)
     await setDefaultRichMenu(existing.richMenuId)
     return existing.richMenuId
   }
