@@ -5,72 +5,81 @@ export const createMenuFlexMessage = (state: UserOrderState) => {
   const bubbles = MENU_ITEMS.map((item) => {
     const qty = state.items[item.id] || 0
     return {
-      type: 'bubble' as const,
-      size: 'micro' as const,
+      type: 'bubble',
+      size: 'micro',
       hero: {
-        type: 'image' as const,
+        type: 'image',
         url: 'https://via.placeholder.com/300x300/ff6600/ffffff?text=KAPRAO',
-        size: 'full' as const,
-        aspectRatio: '1:1' as const,
-        aspectMode: 'cover' as const
+        size: 'full',
+        aspectRatio: '1:1',
+        aspectMode: 'cover'
       },
       body: {
-        type: 'body' as const,
+        type: 'body',
         contents: [
           {
-            type: 'text' as const,
+            type: 'text',
             text: item.name,
-            weight: 'bold' as const,
-            size: 'sm' as const,
+            weight: 'bold',
+            size: 'sm',
             wrap: true
           },
           {
-            type: 'text' as const,
+            type: 'text',
             text: `${item.price} บาท`,
             color: '#aaaaaa',
-            size: 'xs' as const
+            size: 'xs'
           }
         ]
       },
       footer: {
-        type: 'footer' as const,
+        type: 'footer',
+        spacing: 'sm',
         contents: [
           {
-            type: 'button' as const,
-            action: {
-              type: 'postback' as const,
-              label: '➖',
-              data: `decrease:${item.id}`
-            },
-            style: 'secondary' as const,
-            color: '#ff4444'
-          },
-          {
-            type: 'text' as const,
-            text: `${qty}`,
-            align: 'center' as const,
-            gravity: 'center' as const,
-            size: 'sm' as const,
-            weight: 'bold' as const
-          },
-          {
-            type: 'button' as const,
-            action: {
-              type: 'postback' as const,
-              label: '➕',
-              data: `increase:${item.id}`
-            },
-            style: 'primary' as const,
-            color: '#00aa00'
+            type: 'box',
+            layout: 'horizontal',
+            contents: [
+              {
+                type: 'button',
+                action: {
+                  type: 'postback',
+                  label: '➖',
+                  data: `decrease:${item.id}`
+                },
+                style: 'secondary',
+                color: '#ff4444',
+                flex: 1
+              },
+              {
+                type: 'text',
+                text: `${qty}`,
+                align: 'center',
+                gravity: 'center',
+                size: 'md',
+                weight: 'bold',
+                flex: 1
+              },
+              {
+                type: 'button',
+                action: {
+                  type: 'postback',
+                  label: '➕',
+                  data: `increase:${item.id}`
+                },
+                style: 'primary',
+                color: '#00aa00',
+                flex: 1
+              }
+            ]
           }
-        ],
-        flex: 0
+        ]
       }
     }
   })
 
   return {
-    type: 'carousel' as const,
+    type: 'carousel',
     contents: bubbles
   }
 }
@@ -89,61 +98,62 @@ export const createOrderSummaryFlexMessage = (state: UserOrderState) => {
     .join('\n')
 
   return {
-    type: 'bubble' as const,
+    type: 'bubble',
     body: {
-      type: 'body' as const,
+      type: 'body',
       contents: [
         {
-          type: 'text' as const,
+          type: 'text',
           text: '📋 สรุปออเดอร์ของคุณ',
-          weight: 'bold' as const,
-          size: 'lg' as const
+          weight: 'bold',
+          size: 'lg'
         },
         {
-          type: 'separator' as const,
-          margin: 'md' as const
+          type: 'separator',
+          margin: 'md'
         },
         {
-          type: 'text' as const,
+          type: 'text',
           text: itemTexts || 'ยังไม่มีรายการ',
-          size: 'sm' as const,
+          size: 'sm',
           wrap: true,
-          margin: 'md' as const
+          margin: 'md'
         },
         {
-          type: 'separator' as const,
-          margin: 'md' as const
+          type: 'separator',
+          margin: 'md'
         },
         {
-          type: 'text' as const,
-          text: ` รวมทั้งหมด: ${total} บาท`,
-          weight: 'bold' as const,
-          size: 'md' as const,
+          type: 'text',
+          text: `รวมทั้งหมด: ${total} บาท`,
+          weight: 'bold',
+          size: 'md',
           color: '#ff6600'
         }
       ]
     },
     footer: {
-      type: 'footer' as const,
+      type: 'footer',
+      spacing: 'sm',
       contents: [
         {
-          type: 'button' as const,
+          type: 'button',
           action: {
-            type: 'postback' as const,
+            type: 'postback',
             label: '✅ ยืนยันออเดอร์',
             data: 'confirm_order'
           },
-          style: 'primary' as const,
+          style: 'primary',
           color: '#00aa00'
         },
         {
-          type: 'button' as const,
+          type: 'button',
           action: {
-            type: 'postback' as const,
+            type: 'postback',
             label: '🔄 เริ่มใหม่',
             data: 'reset_order'
           },
-          style: 'secondary' as const
+          style: 'secondary'
         }
       ]
     }
