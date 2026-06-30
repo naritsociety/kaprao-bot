@@ -1,78 +1,163 @@
 import { Elysia } from 'elysia'
 import { config } from '../config/env'
-import { replyTextMessages, getProfile } from '../services/line'
+// ✅ ตอนนี้ import ครบ 3 ตัวแล้ว เพราะเราเพิ่ม export ใน services/line.ts เรียบร้อย
+import { replyTextMessages, replyFlexMessage, getProfile } from '../services/line'
+import { getOrderState, updateOrderItem, clearOrderState } from '../services/orderState'
+import { createMenuFlexMessage, createOrderSummaryFlexMessage } from '../services/flexMenu'
+import { MENU_ITEMS } from '../services/menu'
 
-// เพิ่ม source: { userId: string } เข้าไปใน Type
+// ===== Types =====
 type LineTextMessageEvent = {
   type: 'message'
   replyToken: string
-  source: {
-    userId: string
-  }
-  message: {
-    type: 'text'
-    text: string
-  }
+  source: { userId: string }
+  message: { type: 'text'; text: string }
+}
+
+type LinePostbackEvent = {
+  type: 'postback'
+  replyToken: string
+  source: { userId: string }
+  postback: { data: string }
 }
 
 type LineWebhookEvent =
   | LineTextMessageEvent
-  | {
-      type: string
-      [key: string]: unknown
-    }
+  | LinePostbackEvent
+  | { type: string; [key: string]: unknown }
 
-type LineWebhookBody = {
-  events?: LineWebhookEvent[]
-}
+type LineWebhookBody = { events?: LineWebhookEvent[] }
 
-const isTextMessageEvent = (
-  event: LineWebhookEvent
-): event is LineTextMessageEvent =>
+// ===== Type Guards =====
+const isTextMessageEvent = (event: LineWebhookEvent): event is LineTextMessageEvent =>
   event.type === 'message' &&
   typeof (event as LineTextMessageEvent).replyToken === 'string' &&
   typeof (event as LineTextMessageEvent).source?.userId === 'string' &&
   (event as LineTextMessageEvent).message?.type === 'text'
 
+const isPostbackEvent = (event: LineWebhookEvent): event is LinePostbackEvent =>
+  event.type === 'postback' &&
+  typeof (event as LinePostbackEvent).replyToken === 'string' &&
+  typeof (event as LinePostbackEvent).source?.userId === 'string' &&
+  typeof (event as LinePostbackEvent).postback?.data === 'string'
+
+// ===== Helpers =====
+const fetchCustomerName = async (userId: string): Promise<string> => {
+  try {
+    const profile = await getProfile(userId)
+    return profile.displayName
+  } catch {
+    return 'ลูกค้า'
+  }
+}
+
+// ===== Handlers =====
+const handleTextMessage = async (event: LineTextMessageEvent, customerName: string) => {
+  const text = event.message.text.trim().toLowerCase()
+  const userId = event.source.userId
+
+  if (text === 'เมนู' || text === 'menu') {
+    const state = getOrderState(userId)
+    const flex = createMenuFlexMessage(state)
+    await replyFlexMessage(event.replyToken, `${customerName} เลือกเมนูได้เลยครับ ️`, flex)
+    return
+  }
+
+  if (text === 'ยืนยัน' || text === 'order' || text === 'สรุป') {
+    const state = getOrderState(userId)
+    if (Object.keys(state.items).length === 0) {
+      await replyTextMessages(event.replyToken, [
+        `คุณ ${customerName} ยังไม่มีรายการในออเดอร์ครับ พิมพ์ "เมนู" เพื่อเลือกอาหารได้เลย 🍳`
+      ])
+      return
+    }
+    const flex = createOrderSummaryFlexMessage(state)
+    await replyFlexMessage(event.replyToken, `สรุปออเดอร์ของคุณ ${customerName}`, flex)
+    return
+  }
+
+  await replyTextMessages(event.replyToken, [
+    `สวัสดีครับคุณ ${customerName}! \nพิมพ์ "เมนู" เพื่อดูรายการอาหารได้เลยครับ 🍳`
+  ])
+}
+
+const handlePostback = async (event: LinePostbackEvent, customerName: string) => {
+  const data = event.postback.data
+  const userId = event.source.userId
+
+  if (data.startsWith('increase:') || data.startsWith('decrease:')) {
+    const [action, menuId] = data.split(':')
+    const state = getOrderState(userId)
+    const currentQty = state.items[menuId] || 0
+    const newQty = action === 'increase' ? currentQty + 1 : Math.max(0, currentQty - 1)
+    updateOrderItem(userId, menuId, newQty)
+
+    const flex = createMenuFlexMessage(getOrderState(userId))
+    await replyFlexMessage(event.replyToken, `${customerName} เลือกเมนูได้เลยครับ 🌶️`, flex)
+    return
+  }
+
+  if (data === 'confirm_order') {
+    const state = getOrderState(userId)
+    const items = Object.entries(state.items)
+      .map(([menuId, qty]) => {
+        const menu = MENU_ITEMS.find((m) => m.id === menuId)
+        return menu ? `${menu.name} x${qty}` : null
+      })
+      .filter(Boolean)
+      .join('\n')
+
+    const total = Object.entries(state.items).reduce((sum, [menuId, qty]) => {
+      const menu = MENU_ITEMS.find((m) => m.id === menuId)
+      return sum + (menu?.price || 0) * qty
+    }, 0)
+
+    await replyTextMessages(event.replyToken, [
+      `✅ คุณ ${customerName} ยืนยันออเดอร์แล้วครับ!\n\n📋 ${items}\n\n💰 รวม ${total} บาท\n\nเราจะดำเนินการจัดส่งให้เร็วที่สุดครับ 🙏`
+    ])
+    clearOrderState(userId)
+    return
+  }
+
+  if (data === 'reset_order') {
+    clearOrderState(userId)
+    await replyTextMessages(event.replyToken, [
+      `เริ่มออเดอร์ใหม่แล้วครับคุณ ${customerName} พิมพ์ "เมนู" เพื่อเลือกอาหารได้เลย 🍳`
+    ])
+    return
+  }
+}
+
+// ===== Route =====
 export const lineRoutes = new Elysia().post('/webhook', async ({ body, set }) => {
   const events: LineWebhookEvent[] = Array.isArray((body as LineWebhookBody).events)
     ? ((body as LineWebhookBody).events as LineWebhookEvent[])
     : []
 
-  const textMessageEvents = events.filter(isTextMessageEvent)
-
   console.log(`LINE webhook received ${events.length} event(s)`)
 
-  if (textMessageEvents.length > 0 && !config.lineChannelAccessToken) {
+  if (events.length > 0 && !config.lineChannelAccessToken) {
     console.error('LINE_CHANNEL_ACCESS_TOKEN is not configured')
     set.status = 200
-    return {
-      ok: false,
-      message: 'LINE_CHANNEL_ACCESS_TOKEN is not configured'
-    }
+    return { ok: false, message: 'LINE_CHANNEL_ACCESS_TOKEN is not configured' }
   }
 
-  for (const event of textMessageEvents) {
+  for (const event of events) {
     try {
-      // 1. ดึงชื่อลูกค้าจาก userId (ถ้าดึงไม่ได้จะใช้คำว่า 'ลูกค้า' แทน)
-      let customerName = 'ลูกค้า'
-      try {
-        const profile = await getProfile(event.source.userId)
-        customerName = profile.displayName
-        console.log(`Fetched profile for user: ${customerName}`)
-      } catch (profileError) {
-        console.warn('Failed to fetch user profile, using default name:', profileError)
+      let userId = ''
+      if (isTextMessageEvent(event)) userId = event.source.userId
+      else if (isPostbackEvent(event)) userId = event.source.userId
+      else continue
+
+      const customerName = await fetchCustomerName(userId)
+
+      if (isTextMessageEvent(event)) {
+        await handleTextMessage(event, customerName)
+      } else if (isPostbackEvent(event)) {
+        await handlePostback(event, customerName)
       }
-
-      // 2. ประกอบข้อความตอบกลับแบบสนิทสนม
-      const replyMessage = `สวัสดีครับคุณ ${customerName}! 🙏\n\nได้รับออเดอร์ของคุณแล้ว เราจะดำเนินการจัดส่งให้เร็วที่สุด ขอบคุณที่ใช้บริการกะเพราวันหยุดนะครับ 🌶️🍳`
-
-      // 3. ส่งข้อความตอบกลับ
-      await replyTextMessages(event.replyToken, [replyMessage])
-      console.log(`Replied to ${customerName}`)
-      
     } catch (error) {
-      console.error('Failed to reply to LINE text message', error)
+      console.error('Failed to handle LINE event', error)
     }
   }
 

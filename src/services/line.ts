@@ -1,19 +1,25 @@
 import { config } from '../config/env'
 
+// ===== Types =====
 type LineTextMessage = {
   type: 'text'
   text: string
 }
 
-type LineReplyResponse = {
+type FlexMessage = {
+  type: 'flex'
+  altText: string
+  contents: any
+}
+
+export type LineReplyResponse = {
   sentMessages?: Array<{
     id: string
     quoteToken?: string
   }>
 }
 
-// เพิ่ม Type สำหรับ Profile
-type LineProfile = {
+export type LineProfile = {
   displayName: string
   userId: string
   pictureUrl?: string
@@ -24,6 +30,7 @@ type LineProfile = {
 const lineReplyUrl = 'https://api.line.me/v2/bot/message/reply'
 const lineProfileUrl = 'https://api.line.me/v2/bot/profile'
 
+// ===== 1. ฟังก์ชันส่งข้อความธรรมดา =====
 export const replyTextMessages = async (
   replyToken: string,
   texts: string[]
@@ -39,10 +46,7 @@ export const replyTextMessages = async (
       'Content-Type': 'application/json',
       Authorization: `Bearer ${config.lineChannelAccessToken}`
     },
-    body: JSON.stringify({
-      replyToken,
-      messages
-    })
+    body: JSON.stringify({ replyToken, messages })
   })
 
   if (!response.ok) {
@@ -53,7 +57,36 @@ export const replyTextMessages = async (
   return response.json()
 }
 
-// ฟังก์ชันใหม่: ดึง Profile ลูกค้า
+// ===== 2. ฟังก์ชันส่ง Flex Message (การ์ดสวยๆ) =====
+export const replyFlexMessage = async (
+  replyToken: string,
+  altText: string,
+  contents: any
+): Promise<LineReplyResponse> => {
+  const message: FlexMessage = {
+    type: 'flex',
+    altText,
+    contents
+  }
+
+  const response = await fetch(lineReplyUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${config.lineChannelAccessToken}`
+    },
+    body: JSON.stringify({ replyToken, messages: [message] })
+  })
+
+  if (!response.ok) {
+    const errorBody = await response.text()
+    throw new Error(`LINE flex reply failed: ${response.status} ${errorBody}`)
+  }
+
+  return response.json()
+}
+
+// ===== 3. ฟังก์ชันดึง Profile ผู้ใช้ =====
 export const getProfile = async (userId: string): Promise<LineProfile> => {
   const response = await fetch(`${lineProfileUrl}/${userId}`, {
     method: 'GET',
