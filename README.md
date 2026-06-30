@@ -43,6 +43,15 @@ Available routes:
 - `GET /`
 - `GET /health`
 - `POST /webhook`
+- `GET /admin/setup-richmenu` (create + set default rich menu)
+
+To setup the rich menu:
+
+1. Set `LINE_CHANNEL_ACCESS_TOKEN` in `.env`.
+2. Start the app with `bun run dev` or `bun run start`.
+3. Open `http://localhost:3000/admin/setup-richmenu` in your browser.
+
+The endpoint will create the rich menu, upload a placeholder image, and set it as the default menu for your LINE bot.
 
 ## Production Start
 
