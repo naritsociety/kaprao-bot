@@ -138,9 +138,12 @@ const setDefaultRichMenu = async (richMenuId: string): Promise<void> => {
   }
 }
 
-const getRichMenuImage = async (): Promise<Uint8Array> => {
+const getRichMenuImage = async (): Promise<ArrayBuffer> => {
   try {
-    return await readFile(new URL('../rich-menu.png', import.meta.url))
+    const file = await readFile(new URL('../rich-menu.png', import.meta.url))
+    return file.byteOffset === 0 && file.byteLength === file.buffer.byteLength
+      ? file.buffer
+      : file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength)
   } catch (error) {
     const imageUrl = 'https://via.placeholder.com/2500x843.png?text=Kaprao'
     const response = await fetch(imageUrl)
@@ -150,7 +153,7 @@ const getRichMenuImage = async (): Promise<Uint8Array> => {
       throw new Error(`Failed to download rich menu image: ${response.status} ${body}`)
     }
 
-    return new Uint8Array(await response.arrayBuffer())
+    return await response.arrayBuffer()
   }
 }
 
