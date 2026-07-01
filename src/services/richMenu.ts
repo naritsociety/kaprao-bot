@@ -141,9 +141,7 @@ const setDefaultRichMenu = async (richMenuId: string): Promise<void> => {
 const getRichMenuImage = async (): Promise<ArrayBuffer> => {
   try {
     const file = await readFile(new URL('../rich-menu.jpg', import.meta.url))
-    return file.byteOffset === 0 && file.byteLength === file.buffer.byteLength
-      ? file.buffer
-      : file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength)
+    return file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength)
   } catch (error) {
     const imageUrl = 'https://via.placeholder.com/2500x843.jpg?text=Kaprao'
     const response = await fetch(imageUrl)
@@ -161,7 +159,7 @@ const uploadRichMenuImage = async (richMenuId: string): Promise<void> => {
   ensureAccessToken()
   const imageBuffer = await getRichMenuImage()
 
-  const response = await fetch(`${baseUrl}/${richMenuId}/content`, {
+  const response = await fetch(`https://api.line.me/v2/bot/richmenu/${encodeURIComponent(richMenuId)}/content`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${config.lineChannelAccessToken}`,
