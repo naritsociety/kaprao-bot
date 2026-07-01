@@ -140,12 +140,12 @@ const setDefaultRichMenu = async (richMenuId: string): Promise<void> => {
 
 const getRichMenuImage = async (): Promise<ArrayBuffer> => {
   try {
-    const file = await readFile(new URL('../rich-menu.png', import.meta.url))
+    const file = await readFile(new URL('../rich-menu.jpg', import.meta.url))
     return file.byteOffset === 0 && file.byteLength === file.buffer.byteLength
       ? file.buffer
       : file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength)
   } catch (error) {
-    const imageUrl = 'https://via.placeholder.com/2500x843.png?text=Kaprao'
+    const imageUrl = 'https://via.placeholder.com/2500x843.jpg?text=Kaprao'
     const response = await fetch(imageUrl)
 
     if (!response.ok) {
@@ -165,7 +165,7 @@ const uploadRichMenuImage = async (richMenuId: string): Promise<void> => {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${config.lineChannelAccessToken}`,
-      'Content-Type': 'image/png'
+      'Content-Type': 'image/jpeg'
     },
     body: imageBuffer
   })
